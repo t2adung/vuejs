@@ -52,6 +52,11 @@ const play = (c) => {
 	SaveGame()
 }
 
+const winPercentage = computed(() => {
+	const total = wins.value + draws.value + losses.value
+	return total ? (wins.value / total) * 100 : 0
+})
+
 const SaveGame = () => {
 	localStorage.setItem('wins', wins.value)
 	localStorage.setItem('draws', draws.value)
@@ -64,8 +69,20 @@ const LoadGame = () => {
 	losses.value = parseInt(localStorage.getItem('losses')) || 0
 }
 
+const ResetRound = () => {
+	choice.value = null
+	computerChoice.value = null
+	verdict.value = null
+}
+
 onMounted(() => {
 	LoadGame()
+
+  window.addEventListener('keypress', (e) => {
+		if (e.key === 'r') {
+			ResetRound()
+		}
+	})
 })
 
 
@@ -105,6 +122,8 @@ onMounted(() => {
 				<div class="text-6xl mb-12">
 					{{ verdict }}
 				</div>
+
+        <button @click="ResetRound" class="bg-pink-500 text-lg py-2 px-4">Reset</button>
 
       </div>
 		</main>
