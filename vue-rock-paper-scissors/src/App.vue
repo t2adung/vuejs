@@ -124,8 +124,11 @@ onMounted(() => {
 				</div>
 
         <button @click="ResetRound" class="bg-pink-500 text-lg py-2 px-4">Reset</button>
-
       </div>
+
+      <div class="mt-12 text-3xl mb-4">{{ wins }} : {{ draws }} : {{ losses }}</div>
+
+			<div class="text-lg">Win rate: {{ Math.round(winPercentage) }}%</div>
 		</main>
   </div>
 </template>
