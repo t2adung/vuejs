@@ -1,5 +1,6 @@
 <script setup>
 import  {ref, shallowRef, computed, watch, nextTick } from 'vue'
+import Chart from 'chart.js/auto'
 
 const weights = ref([])
 
@@ -20,6 +21,55 @@ const addWeight = () => {
   })
 }
 
+watch(weights, newWeights => {
+  // spread operator to clone the contents of newWeights to new array ws, 
+  // called copy of an array of object techniques
+  // any changes made to ws will not affect newWeights, and vice versa.
+  const ws = [...newWeights] 
+
+  if (weightChart.value) {
+		weightChart.value.data.labels = ws
+			.sort((a, b) => a.date - b.date)
+			.map(weight => new Date(weight.date).toLocaleDateString() )
+			.slice(-7)
+
+		weightChart.value.data.datasets[0].data = ws
+			.sort((a, b) => a.date - b.date)
+			.map(weight => weight.weight)
+			.slice(-7)
+
+		weightChart.value.update()
+		return
+	}
+  // write data into chart
+  nextTick(() => {
+    weightChart.value = new Chart(weightChartEl.value.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: ws
+                  .sort((a, b) => a.date - b.date)
+                  .map(weight => new Date(weight.date).toLocaleDateString()),
+        datasets: [
+          {
+            label: 'Weight',
+						data: ws
+							.sort((a, b) => a.date - b.date)
+							.map(weight => weight.weight),
+						backgroundColor: 'rgba(255, 105, 180, 0.2)',
+						borderColor: 'rgba(255, 105, 180, 1)',
+						borderWidth: 1,
+						fill: true
+          }
+        ]
+      },
+      options: {
+				responsive: true,
+				maintainAspectRatio: false
+			}
+    })
+  })
+  console.log(weightChartEl);
+}, {deep: true}) /*{deep: true} option indicates that you want to watch for changes in nested properties of the weights object.*/
 </script>
 
 <template>
@@ -34,6 +84,24 @@ const addWeight = () => {
       <input type="number" step="0.1" v-model="weightInput" />
       <input type="submit" value="Add weight" />
     </form>
+
+    <div v-if="weights && weights.length > 0">
+      <h2>Last 7 days</h2>
+
+      <div class="canvas-box">
+        <canvas ref="weightChartEl"></canvas>
+      </div>
+
+      <div class="weight-history">
+        <h2>Weight History</h2>
+        <ul>
+          <li v-for="(weight, index) in weights" :key="index">
+            <span>{{ weight.weight }}kg</span> &nbsp;
+            <small>{{ new Date(weight.date).toLocaleDateString() }}</small>
+          </li>
+        </ul>
+      </div>
+    </div>
   </main>
 </template>
 
